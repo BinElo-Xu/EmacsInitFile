@@ -1,0 +1,23 @@
+# 包管理器下载的包，它们应该由配置自动安装
+elpa/
+straight/
+transient/
+
+# 编译缓存，自动生成且与机器相关
+eln-cache/
+
+# Emacs 自动生成的临时文件和历史记录
+auto-save-list/
+*~
+#*#
+.#*
+history
+bookmarks
+recentf
+server/
+var/
+
+# 如果你有特定于机器或包含密码的文件
+machine-specific.el
+secrets.el
+
