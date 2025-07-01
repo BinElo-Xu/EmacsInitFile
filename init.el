@@ -1,7 +1,11 @@
 ;; ====================
-;; Vim 用户专属 Emacs 配置 (修复版)
+;; Vim 用户专属 Emacs 配置
 ;; 保存为 ~/.emacs.d/init.el
 ;; ====================
+
+;; -- 关闭所有声音提示 --
+(setq ring-bell-function 'ignore) ; 关闭错误提示音
+(setq visible-bell nil)           ; 关闭视觉提示（闪烁）
 
 ;; 禁用默认界面元素
 (menu-bar-mode -1)
@@ -35,6 +39,7 @@
 
   ;; 解决 ESC 延迟
   (define-key evil-insert-state-map (kbd "C-c") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "j j") 'evil-normal-state)
 
   ;; Vim 风格命令
   (evil-ex-define-cmd "w" 'save-buffer)
