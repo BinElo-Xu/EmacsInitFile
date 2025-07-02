@@ -48,10 +48,20 @@
   (setq evil-undo-system 'undo-redo)
   :config
   (evil-mode 1)
+  ;; 绑定
+  (use-package key-chord
+  :ensure t
+  :config
+  ;; 开启 key-chord-mode
+  (key-chord-mode 1)
+  ;; 设置超时时间（单位：秒）。0.3秒是一个不错的起点，可以根据手感调整。
+  (setq key-chord-two-keys-delay 0.3)
+  ;; 定义 "jj" 这个组合键，让它在 insert state 和 emacs state 下都执行 evil-normal-state
+  (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+  (key-chord-define evil-emacs-state-map "jj" 'evil-normal-state))
 
   ;; 解决 ESC 延迟
   (define-key evil-insert-state-map (kbd "C-c") 'evil-normal-state)
-  (define-key evil-insert-state-map (kbd "j j") 'evil-normal-state)
 
   ;; Vim 风格命令
   (evil-ex-define-cmd "w" 'save-buffer)
@@ -67,13 +77,6 @@
   :after evil
   :config
   (evil-collection-init))
-
-;; 文件树
-(use-package treemacs
-  :ensure t
-  :config
-  (setq treemacs-width 30)
-  (evil-define-key 'normal global-map (kbd "<leader>ft") 'treemacs))
 
 ;; 文件搜索
 (use-package counsel
@@ -226,7 +229,11 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   :bind (("C-c p" . projectile-command-map))
   :config
   (setq projectile-mode-line "Projectile")
-  (setq projectile-track-known-projects-automatically nil))
+  (setq projectile-track-known-projects-automatically nil)
+  (setq projectile-project-search-path '("D:/WorkSpace/Project/"))
+  (setq projectile-indexing-method 'hybrid)
+  )
+
 
 (use-package counsel-projectile
   :ensure t
@@ -360,6 +367,9 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
 (evil-define-key 'normal global-map (kbd "<leader>q") 'kill-this-buffer)
 (evil-define-key 'normal global-map (kbd "gf") 'find-file-at-point)
 (evil-define-key 'normal global-map (kbd "gb") 'counsel-switch-buffer)
+
+;; 绑定项目扫描快捷键
+(evil-define-key 'normal global-map (kbd "<leader>pR") 'projectile-discover-projects-in-search-path)
 
 ;; 剪贴板支持
 (setq select-enable-clipboard t)
