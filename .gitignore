@@ -16,6 +16,8 @@ bookmarks
 recentf
 server/
 var/
+amx-items
+flycheck_init.el
 
 # 如果你有特定于机器或包含密码的文件
 machine-specific.el
