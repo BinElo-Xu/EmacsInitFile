@@ -17,6 +17,10 @@
 (scroll-bar-mode -1)
 (setq inhibit-startup-screen t)
 
+;;禁用烦人的警告
+;; Suppress byte-compiler warnings about docstrings' unescaped single quotes
+(setq byte-compile-warnings '(not docstrings))
+
 ;; 设置包管理器
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
@@ -55,7 +59,7 @@
   ;; 开启 key-chord-mode
   (key-chord-mode 1)
   ;; 设置超时时间（单位：秒）。0.3秒是一个不错的起点，可以根据手感调整。
-  (setq key-chord-two-keys-delay 0.3)
+  (setq key-chord-two-keys-delay 0.4)
   ;; 定义 "jj" 这个组合键，让它在 insert state 和 emacs state 下都执行 evil-normal-state
   (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
   (key-chord-define evil-emacs-state-map "jj" 'evil-normal-state))
@@ -230,7 +234,7 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   :config
   (setq projectile-mode-line "Projectile")
   (setq projectile-track-known-projects-automatically nil)
-  (setq projectile-project-search-path '("D:/WorkSpace/Project/"))
+  (setq projectile-project-search-path '("~/WorkSpace"))
   (setq projectile-indexing-method 'hybrid)
   )
 
@@ -272,7 +276,7 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
 (use-package dap-lldb
   :after dap-mode
   :custom
-  (dap-lldb-debug-program '("C:/Users/xushunbin/scoop/apps/llvm/20.1.7/bin/lldb-dap"))
+  (dap-lldb-debug-program '("lldb-dap"))
   ;; ask user for executable to debug if not specified explicitly (c++)
   (dap-lldb-debugged-program-function
    (lambda () (read-file-name "Select file to debug: "))))
@@ -290,7 +294,7 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
 (use-package pyvenv
   :ensure t
   :config
-  (setenv "WORKON_HOME" (expand-file-name "C:/Users/xushunbin/scoop/apps/miniconda3/25.5.1-0/envs"))
+  (setenv "WORKON_HOME" (expand-file-name "~/miniconda3/envs"))
   ;; (setq python-shell-interpreter "python3")  ; （可选）更改解释器名字
   (pyvenv-mode t)
   ;; （可选）如果希望启动后激活 miniconda 的 base 环境，就使用如下的 hook
