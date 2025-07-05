@@ -1,5 +1,5 @@
-;;; init.el --- the init file for emacs
-;;; Commentary:
+;;; init.el --- the configuration of emacs.
+;;; commentary:
 
 ;; ====================
 ;; Vim 用户专属 Emacs 配置
@@ -10,16 +10,22 @@
 ;; -- 关闭所有声音提示 --
 (setq ring-bell-function 'ignore) ; 关闭错误提示音
 (setq visible-bell nil)           ; 关闭视觉提示（闪烁）
-
-;; 禁用默认界面元素
+; 禁用默认界面元素
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (setq inhibit-startup-screen t)
 
 ;;禁用烦人的警告
-;; Suppress byte-compiler warnings about docstrings' unescaped single quotes
-(setq byte-compile-warnings '(not docstrings))
+(setq-default byte-compile-warnings
+              '(docstrings
+                free-vars
+                unresolved
+                obsolete
+                call-graph      ; 编译器无法分析函数调用图，通常因为动态调用
+                cl-functions    ; 使用了 cl-lib 但未显式 require 'cl-lib
+                suspicious      ; 一些可疑但通常没问题的代码结构
+                ))
 
 ;; 设置包管理器
 (require 'package)
@@ -34,6 +40,30 @@
 
 (eval-when-compile
   (require 'use-package))
+
+;;确保Emacs继承shell的PATH环境变量
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (memq window-system '(mac ns x))
+    (setq exec-path-from-shell-variables
+          '("PATH"
+            "MANPATH"
+            "LC_ALL"
+            "LC_CTYPE"
+            "LANG"
+            "CONDA_EXE"
+            "CONDA_PREFIX"
+            "CONDA_PYTHON_EXE"
+            "CONDA_SHLVL"
+            "CONDA_DEFAULT_ENV"))
+    (exec-path-from-shell-initialize))
+  )
+;; 按键提示模块
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode))
 
 ;; hydra插件配置
 (use-package hydra
@@ -52,18 +82,6 @@
   (setq evil-undo-system 'undo-redo)
   :config
   (evil-mode 1)
-  ;; 绑定
-  (use-package key-chord
-  :ensure t
-  :config
-  ;; 开启 key-chord-mode
-  (key-chord-mode 1)
-  ;; 设置超时时间（单位：秒）。0.3秒是一个不错的起点，可以根据手感调整。
-  (setq key-chord-two-keys-delay 0.4)
-  ;; 定义 "jj" 这个组合键，让它在 insert state 和 emacs state 下都执行 evil-normal-state
-  (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
-  (key-chord-define evil-emacs-state-map "jj" 'evil-normal-state))
-
   ;; 解决 ESC 延迟
   (define-key evil-insert-state-map (kbd "C-c") 'evil-normal-state)
 
@@ -236,6 +254,7 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   (setq projectile-track-known-projects-automatically nil)
   (setq projectile-project-search-path '("~/WorkSpace"))
   (setq projectile-indexing-method 'hybrid)
+  (setq projectile-max-depth 8)
   )
 
 
@@ -243,6 +262,13 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   :ensure t
   :after (projectile)
   :init (counsel-projectile-mode))
+;;代码片段引擎
+(use-package yasnippet
+  :ensure t
+  :hook (prog-mode . yas-minor-mode) ;在所有编程模式中启动
+  :config
+  ;(yas-global-mode 1)
+  )
 
 ;; 自动补全
 (use-package company
@@ -250,7 +276,10 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   :init (global-company-mode)
   :config
   (setq company-idle-delay 0.2)
-  (setq company-minimum-prefix-length 2))
+  (setq company-minimum-prefix-length 2)
+  (with-eval-after-load 'company
+    (add-to-list 'company-backend 'company-yasnippet))
+  )
 
 ;; 显示自动补全的图标
 (use-package company-box
@@ -289,8 +318,11 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   :interpreter ("python3" . python-mode)
   :config
   ;; for debug
-  (require 'dap-python))
-
+  (with-eval-after-load 'dap-python
+    (setq dap-python-debugger 'debugpy))
+  (require 'dap-python)
+  )
+;; python环境管理模块
 (use-package pyvenv
   :ensure t
   :config
@@ -302,7 +334,7 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
   ;; (python-mode . (lambda () (pyvenv-workon "..")))
   )
 
-;; 调试模块(LSP)
+;; python调试模块(LSP)
 (use-package lsp-pyright
   :ensure t
   :config
@@ -311,6 +343,24 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
 		  (require 'lsp-pyright)
 		  (lsp-deferred))))
 ;; python mode ends here.
+
+;;java Language Support
+;; ==================================
+;; Java Language Support (最终正确版)
+;; ==================================
+
+;; ---------------------------------
+;; 1. LSP for Code Intelligence
+;; ---------------------------------
+(use-package lsp-java
+  :ensure t
+  :config
+  ;; 这是核心：将 lsp-mode 挂载到 java-mode 上
+  (add-hook 'java-mode-hook 'lsp)
+  (require 'dap-java)
+  )
+
+; java mode ends here.
 ;; 语言模块结束
 
 ;; 工作区管理:
@@ -401,12 +451,13 @@ _Q_: Disconnect     _sl_: List locals        _bl_: Set log message
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages nil))
+ '(package-selected-packages
+   '(0blayout use-package-hydra treemacs-projectile pyvenv magit lsp-ui lsp-pyright lsp-ivy key-chord good-scroll flycheck exec-path-from-shell evil-collection doom-themes doom-modeline dashboard dap-mode counsel-projectile company-box amx)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
 
+)
 ;;; init.el ends here
